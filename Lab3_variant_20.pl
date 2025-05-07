@@ -1,13 +1,41 @@
-%20. Расставить максимальное число белых ладей, чтобы они не били друг друга.
-% max_rooks_clp_gprolog.pl
-% Поиск максимума ладей на доске 8×8 с помощью встроенного FD-решателя
+%20. Расставить максимальное число белых ФЕРЗЕЙ, чтобы они не били друг друга.
+% max_queens_clp_gprolog.pl
+% Поиск максимума ферзей на доске 8×8 с использованием FD-решателя
 
-% Обходим K от 8 до 1:
-max_rooks_clp(K, Config) :-
-    between(1, 8, Rev),             % Rev = 1..8
-    K is 9 - Rev,                   % K = 8..1 :contentReference[oaicite:3]{index=3}
-    length(Config, K),              % Config — список длины K
-    fd_domain(Config, 1, 8),        % все C ∈ 1..8 :contentReference[oaicite:4]{index=4}
-    fd_all_different(Config),       % все C попарно различны :contentReference[oaicite:5]{index=5}
-    fd_labeling(Config),             % перебор значений :contentReference[oaicite:6]{index=6}
-    !.                               % первый найденный (макс. K)
+max_queens_clp(K, Config) :-
+    between(1, 8, Rev),          % Перебор K от 8 до 1
+    K is 9 - Rev,
+    length(Config, K),           % Создание списка Config длины K
+    fd_domain(Config, 1, 8),     % Ограничение: каждая позиция в 1..8
+    fd_all_different(Config),    % Все позиции в разных столбцах
+    add_diagonal_constraints(Config), % Проверка диагоналей
+    fd_labeling(Config),         % Поиск решения
+    !.                           % Отсечение после первого решения
+
+% Добавление ограничений на диагонали
+add_diagonal_constraints(Config) :-
+    add_diagonal_constraints(Config, 1).
+
+add_diagonal_constraints([], _).
+add_diagonal_constraints([C|Rest], I) :-
+    check_against_rest(Rest, C, I, I+1),
+    I1 is I + 1,
+    add_diagonal_constraints(Rest, I1).
+
+check_against_rest([], _, _, _).
+check_against_rest([Cj|Rest], Ci, I, J) :-
+    Ci + I #\= Cj + J,          % Проверка восходящей диагонали
+    Ci - I #\= Cj - J,          % Проверка нисходящей диагонали
+    J1 is J + 1,
+    check_against_rest(Rest, Ci, I, J1).
+
+/*
+Вывод:
+| ?- max_queens_clp(K, Config).
+
+Config = [1,5,8,6,3,7,2,4]
+K = 8
+
+yes
+| ?- 
+*/

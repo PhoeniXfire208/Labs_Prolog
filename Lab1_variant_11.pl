@@ -12,22 +12,14 @@ father(john, mike).
 father(john, lisa).
 father(peter, tom).
 father(peter, ann).
-father(robert, john).  % добавляем отца для Джона, чтобы были дяди
-father(robert, david). % добавляем дядю (брата Джона)
+father(robert, john).  % отец Джона и Дэвида
+father(robert, david).
 
-% Факты о братьях (должны быть собраны вместе)
+% Факты о братьях (взаимные)
 brother(mike, tom).
 brother(tom, mike).
 brother(john, david).
 brother(david, john).
-
-% Упрощенное правило для определения братьев (без сестер)
-siblings(X, Y) :- brother(X, Y).
-
-% Правило для определения дяди (только по отцовской линии)
-uncle(Uncle, Person) :-
-    father(Father, Person),
-    siblings(Uncle, Father).
 
 % 1. Определить братьев конкретного человека
 brothers_of(Person, Brother) :-
@@ -41,18 +33,24 @@ who_is_father(Person, Father) :-
 is_father(Father, Child) :-
     father(Father, Child).
 
-% 4. Определить, является ли один человек дядей другого
+% 4. Определить, является ли один человек дядей другого (исправлено)
 is_uncle(Uncle, Nephew) :-
     uncle(Uncle, Nephew).
+
+% Правило для дяди (исправлено)
+uncle(Uncle, Person) :-
+    father(Father, Person),
+    brother(Uncle, Father).
 
 %%%%%%%%%%
 
 %Ответы будут такие:
+
 %| ?- is_uncle(david, mike).
 
-%true ? ;
+%true ? 
 
-%no
+%yes
 %| ?- brothers_of(mike, X).
 
 %X = tom
@@ -60,10 +58,9 @@ is_uncle(Uncle, Nephew) :-
 %yes
 %| ?- who_is_father(tom, X).
 
-%X = peter ? ;
+%X = peter ? 
 
-%(15 ms) no
+%yes
 %| ?- is_father(peter, ann).
 
 %yes
-%| ?- 
